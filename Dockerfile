@@ -1,6 +1,6 @@
 FROM alpine:latest
 
-RUN apk --no-cache add samba-server
+RUN apk add samba-server samba-common-tools
 
 COPY root/ /
 
