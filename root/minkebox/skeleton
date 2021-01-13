@@ -27,7 +27,12 @@
     },
     {
       type: `Header`,
-      title: `Backup size`
+      title: `Backups`
+    },
+     {
+      type: `SelectDirectory`,
+      name: `/backups`,
+      description: `Select location for backups`
     },
     {
       type: `EditEnvironment`,
