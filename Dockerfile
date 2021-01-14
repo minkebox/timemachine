@@ -1,6 +1,7 @@
 FROM alpine:latest
 
-RUN apk add samba-server samba-common-tools samba-client
+RUN apk add samba-server samba-common-tools samba-client dbus avahi ;\
+    rm -rf /etc/avahi/services/*
 
 COPY root/ /
 

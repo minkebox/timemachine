@@ -29,15 +29,30 @@
       type: `Header`,
       title: `Backups`
     },
-     {
+    {
       type: `SelectDirectory`,
       name: `/backups`,
       description: `Select location for backups`
     },
     {
-      type: `EditEnvironment`,
-      name: `MAXSIZE`,
-      description: `Limit space available for backups (e.g. 50G, 5T)`
+      type: `Text`,
+      text: ``
+    },
+    {
+      type: `EditEnvironmentAsTable`,
+      name: `BACKUPLIST`,
+      description: `Create a list of backup destinations, each with its own space limit (or blank if there is none)`,
+      headers: [
+        {
+          name: `Backup name`
+        },
+        {
+          name: `Space limit (e.g. 50G, 5T)`
+        }
+      ],
+      pattern: `{{V[0]}},{{V[1]}}`,
+      join: `
+`
     },
     {
       type: `Header`,
@@ -64,7 +79,7 @@
     },
     {
       type: `Environment`,
-      name: `MAXSIZE`
+      name: `BACKUPLIST`
     },
     {
       type: `Port`,
@@ -75,20 +90,6 @@
         type: `_device-info._tcp`,
         txt: {
           model: `Xserve`
-        }
-      }
-    },
-    {
-      type: `Port`,
-      name: `9/tcp`,
-      port: 9,
-      protocol: `TCP`,
-      mdns: {
-        type: `_adisk._tcp`,
-        txt: {
-          waMa: `0`,
-          sys: `adVF=0x100`,
-          dk0: `adVF=0x82,adVN=TimeMachine`
         }
       }
     },
@@ -137,52 +138,14 @@
     }
   ],
   monitor: {
-    cmd: `cd /backups;du -d0 *`,
+    cmd: `echo $(iptables -L RX -x -v -n | awk 'NR == 3 {print $2}') $(iptables -L TX -x -v -n | awk 'NR == 3 {print $2}')`,
+    target: `helper`,
     init: `
       <div style="min-width: 400px; height: 250px">
         <canvas style="position: absolute" id="{{ID}}"></canvas>
       </div>
       <script>
-        (function(){
-          const chart = new Chart(document.getElementById("{{ID}}").getContext("2d"), {
-            type: 'horizontalBar',
-            data: {
-              datasets: [{
-                backgroundColor: [ '#fd0a1a', '#ffd73e', '#278b30', '#b12427', '#808020', '#fd471f', '#41b376', '#fd1a91', '#88cce7', '#19196b', '#efad5a', '#d85452' ],
-                data: []
-              }],
-              labels: [],
-            },
-            options: {
-              animation: { duration: 1000, easing: 'linear' },
-              maintainAspectRatio: false,
-              adaptive: true,
-              legend: { display: false },
-              title: { display: true, text: 'Backup Usage (GB)' },
-              scales: {
-                xAxes: [{
-                  ticks: {
-                    precision: 2,
-                    beginAtZero: true
-                  }
-                }]
-              }
-            }
-          });
-          window.monitor("{{ID}}", 3600, (input) => {
-            const lines = input.split('\\n');
-            let c = 0;
-            for (let i = 0; i < lines.length && lines[i]; i++) {
-              const p = lines[i].split(/\\t+/);
-              chart.data.labels[c] = p[1];
-              chart.data.datasets[0].data[c] = parseInt(p[0]) / 1000000;
-              c++;
-            }
-            chart.data.labels.length = c;
-            chart.data.datasets[0].data.length = c;
-            chart.update();
-          });
-        })();
+         networkTrafficGraph({ id: "{{ID}}" });
       </script>
     `
   }
