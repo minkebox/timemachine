@@ -41,7 +41,7 @@
     {
       type: `EditEnvironmentAsTable`,
       name: `BACKUPLIST`,
-      description: `Create a list of backup destinations, each with its own space limit (or blank if there is none)`,
+      description: `Create a list of backup destinations, each with its own space limit (or blank if there is none). <b>Don't</b> use machine names for backup names as they will fail.`,
       headers: [
         {
           name: `Backup name`
